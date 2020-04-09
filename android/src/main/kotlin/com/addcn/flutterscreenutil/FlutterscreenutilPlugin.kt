@@ -1,6 +1,7 @@
 package com.addcn.flutterscreenutil
 
 import android.app.Activity
+import android.content.res.Resources
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.Log
@@ -17,6 +18,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.lang.Exception
 import java.lang.ref.WeakReference
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /** FlutterScreenUtilPlugin */
 public class FlutterScreenUtilPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -54,17 +56,15 @@ public class FlutterScreenUtilPlugin : FlutterPlugin, MethodCallHandler, Activit
         if (call.method == "getNavigationBarHeight") {
             val activity = activityRef?.get()
             if (activity == null) {
-                Log.e("Test", "=========== 1")
                 result.success(0)
                 return
             }
             val bottomBarHeight = getVirtualBottomBarHeight(activity) - ImmersionBar.getNotchHeight(activity)
-            Log.e("Test", "=========== ${getVirtualBottomBarHeight(activity)} == ${ImmersionBar.getNotchHeight(activity)} == $bottomBarHeight")
             if (abs(bottomBarHeight - ImmersionBar.getNavigationBarHeight(activity)) < 5) { // 误差范围在 5 以内
                 result.success(0)
                 return
             }
-            result.success(bottomBarHeight)
+            result.success(px2dp(bottomBarHeight.toFloat()))
         } else {
             result.notImplemented()
         }
@@ -120,5 +120,11 @@ public class FlutterScreenUtilPlugin : FlutterPlugin, MethodCallHandler, Activit
             return 0
         }
         return displayMetrics.heightPixels
+    }
+
+    private fun px2dp(px: Float): Int {
+        val displayMetrics = Resources.getSystem().displayMetrics
+        val dp = px / (displayMetrics.densityDpi / 160f)
+        return dp.roundToInt()
     }
 }
